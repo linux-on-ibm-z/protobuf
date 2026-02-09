@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <endian.h>
 #include <map>
 #include <set>
 #include <string>
@@ -336,6 +337,14 @@ TEST(IntTableTest, BoolKeys) {
   // First element.
   EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
   bool key_bool;
+  #if __BYTE_ORDER == __BIG_ENDIAN
+        uint8_t *b = (uint8_t *)&key;
+        for (size_t i = 0; i < sizeof(key) / 2; i++) {
+                uint8_t tmp = b[i];
+                b[i] = b[sizeof(key) - 1 - i];
+                b[sizeof(key) - 1 - i] = tmp;
+        }
+  #endif
   memcpy(&key_bool, &key, sizeof(key_bool));
   EXPECT_EQ(key_bool, false);
   EXPECT_EQ(upb_inttable_iter_key(&t, iter), false);
@@ -345,6 +354,14 @@ TEST(IntTableTest, BoolKeys) {
 
   // Second element.
   EXPECT_TRUE(upb_inttable_next(&t, &key, &val, &iter));
+  #if __BYTE_ORDER == __BIG_ENDIAN
+       b = (uint8_t *)&key;
+       for (size_t i = 0; i < sizeof(key) / 2; i++) {
+               uint8_t tmp = b[i];
+               b[i] = b[sizeof(key) - 1 - i];
+               b[sizeof(key) - 1 - i] = tmp;
+       }
+  #endif
   memcpy(&key_bool, &key, sizeof(key_bool));
   EXPECT_EQ(key_bool, true);
   EXPECT_EQ(upb_inttable_iter_key(&t, iter), true);
